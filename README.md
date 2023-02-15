@@ -1,4 +1,4 @@
-# py-nsga2
+# nsga2-py
 
 NSGA-II stands for "Non Sorting Genetic Algorithm II", and it's a fast and elitist multiobjective GA.
 
