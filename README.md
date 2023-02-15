@@ -33,7 +33,21 @@ nsga2 = NSGA2(CustomIndividual, pop_size=100)
 nsga2.train(epochs=100)
 ```
 
+You can pass custom arguments for all individuals, such as a dataset.
+```python
+class CustomIndividual(Individual):
+    def fitness(self):
+        do_something(self.dataset)
+
+dataset = [1,2,3]
+
+nsga2 = NSGA2(CustomIndividual, pop_size=100, dataset=dataset)
+```
+
 ### Genetic Parameter Helpers
+
+These are useful on the `Individual` methods.
+
 ```python
 from nsga2.util.genetics import Genetics
 
