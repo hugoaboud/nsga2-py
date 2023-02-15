@@ -90,7 +90,7 @@ class Field:
 """
 def main():
     Log.setup('example/2d_cluster.log')
-    field = Field(500, (0, 200))
+    field = Field(500, (0, 100))
     
     nsga2 = NSGA2(Circle, 100, field=field)
     nsga2.train(epochs=100)

@@ -116,7 +116,7 @@ class NSGA2:
             offspring[newborn.id] = newborn
         return offspring
 
-    def _epoch(self, epoch):
+    def _epoch(self):
         fitnesses = { id: ind.fitness() for id, ind in tqdm(list(self.population.items())) }
         parents = self._select_best_individuals(fitnesses)
         self._save_generation(fitnesses)
@@ -125,7 +125,7 @@ class NSGA2:
     def train(self, epochs: int):  
         for epoch in range(1,epochs+1):
             logging.info(f'Epoch {epoch}/{epochs}')
-            self._epoch(epoch)
+            self._epoch()
 
     def get_fitness_dims(self):
         if (len(self.generations) == 0):

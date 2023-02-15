@@ -1,5 +1,20 @@
 import pytest
-from src.select import select_n_best, select_n_best_of_front
+from src.select import crowding_distance, select_n_best, select_n_best_of_front
+
+
+@pytest.mark.parametrize('given_front, expected_dist', [
+    (
+        {'id0':[1,1,5],'id1':[3,1,5],'id2':[5,1,1],'id3':[5,3,5],'id4':[5,5,5]},
+        {'id0':float('inf'),'id1':1.0,'id2':float('inf'),'id3':1.0,'id4':float('inf')}
+    ),
+])
+def test_crowding_distance(given_front, expected_dist):
+    # when
+    dist = crowding_distance(given_front)
+
+    # then
+    assert dist == expected_dist
+
 
 @pytest.mark.parametrize('given_front, expected_best', [
     (

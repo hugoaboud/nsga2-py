@@ -1,5 +1,5 @@
 import pytest
-from src.sort import Solution, non_dominated_sort
+from src.sort import Result, non_dominated_sort
 
 @pytest.mark.parametrize('given_a, given_b, expected_dominates', [
     ((5,),(3,),True),
@@ -15,11 +15,11 @@ from src.sort import Solution, non_dominated_sort
 ])
 def test_dominates(given_a, given_b, expected_dominates):
     # given
-    sol_a = Solution(given_a)
-    sol_b = Solution(given_b)
+    result_a = Result(given_a)
+    result_b = Result(given_b)
 
     # when
-    dominates = sol_a > sol_b
+    dominates = result_a > result_b
 
     # then
     assert dominates == expected_dominates
