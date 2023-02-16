@@ -20,11 +20,15 @@ class Genetics:
         return np.random.rand() * (max-min) + min
     
     @staticmethod
+    def random_int_list(ranges: [(int,int)]):        
+        return [Genetics.random_int(min, max) for min, max in ranges]
+
+    @staticmethod
     def random_float_list(ranges: [(int,int)]):        
         return [Genetics.random_float(min, max) for min, max in ranges]
 
     @staticmethod
-    def random_select(param: str, a: Individual, b: Individual, prob_a=0.5):
+    def crossover(param: str, a, b, prob_a=0.5):
         if (isinstance(a, list)):
             param_a = a[param]
         else:
@@ -36,6 +40,18 @@ class Genetics:
         if (np.random.rand() < prob_a):
             return param_a
         return param_b
+    
+    @staticmethod
+    def crossover_list(param: str, a, b, prob_a=0.5):
+        if (isinstance(a, list)):
+            param_a = a[param]
+        else:
+            param_a = getattr(a, param)
+        if (isinstance(b, list)):
+            param_b = b[param]
+        else:
+            param_b = getattr(b, param)
+        return [Genetics.crossover(p, param_a, param_b, prob_a=prob_a) for p in range(len(param_a))]
 
     @staticmethod
     def mutate_int(val: int, prob, amp, prob_reset, range):
@@ -50,7 +66,11 @@ class Genetics:
         return val
 
     @staticmethod
-    def mutate_float(val: int, prob, amp, prob_reset, range):
+    def mutate_int_list(params: [(int)]):
+        return [Genetics.mutate_int(*param) for param in params]
+
+    @staticmethod
+    def mutate_float(val: float, prob: float, amp: float, prob_reset: float, range: float):
         if (np.random.rand() < prob_reset):
             return Genetics.random_float(*range)
         if (np.random.rand() < prob):
@@ -60,3 +80,7 @@ class Genetics:
             if (val > range[1]):
                 val = range[1]
         return val
+
+    @staticmethod
+    def mutate_float_list(params: [(float)]):
+        return [Genetics.mutate_float(*param) for param in params]

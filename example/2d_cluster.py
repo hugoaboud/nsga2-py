@@ -29,12 +29,12 @@ from src.util.log import Log
 """
 class Circle(Individual):
 
-    def _init_random(self):
+    def create(self):
         self.x = Genetics.random_int(0, 200)
         self.y = Genetics.random_int(0, 200)
         self.r = Genetics.random_float(1, 20)
 
-    def _init_from_parents(self, a, b):
+    def crossover(self, a, b):
         self.x = Genetics.random_select('x', a, b)
         self.y = Genetics.random_select('y', a, b)
         self.r = Genetics.random_select('r', a, b)

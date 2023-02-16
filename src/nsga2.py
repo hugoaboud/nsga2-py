@@ -20,24 +20,34 @@ class Individual:
 
     def __init__(self, parents = None, **kwargs):
         self.id = NSGA2._new_id()
-        self.ancestor = None
         self.parents = None
         for name, val in kwargs.items():
             setattr(self, name, val)
         if (parents):
-            self.parents = (parents[0].id, parents[1].id)
-            self._init_from_parents(*parents)
+            if (len(parents) == 2):
+                self.parents = (parents[0].id, parents[1].id)
+                self.crossover(*parents)
+            else:
+                self.parents = (parents[0].id)
+                self._clone(parents[0], kwargs)
         else:
-            self._init_random()
+            self.create()
 
-    def _reset_id(self):
-        self.ancestor = self.id
+    def _clone(self, original, kwargs):
+        for key, val in vars(original).items():
+            if (key in kwargs): continue
+            if (key == 'id'): continue
+            if (key == 'parents'): continue
+            if isinstance(val, list):
+                setattr(self, key, list(val))
+            else:
+                setattr(self, key, val)
         self.id = NSGA2._new_id()
 
-    def _init_random(self):
+    def create(self):
         raise NotImplementedError()
 
-    def _init_from_parents(self, a, b):
+    def crossover(self, a, b):
         raise NotImplementedError()
 
     def mutate(self):
@@ -144,8 +154,7 @@ class NSGA2:
         n_best = int(len(best_parents) * (1-self.config.crossover_ratio))
         children = {}
         for parent in best_parents[:n_best]:
-            child = copy.deepcopy(parent)
-            child._reset_id()
+            child = self.individual_class(parents=(parent,), **self.individual_kwargs)
             children[child.id] = child
         while (len(children) < self.config.pop_size):
             a, b = np.random.choice(best_parents, 2)
