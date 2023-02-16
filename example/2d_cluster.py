@@ -4,7 +4,7 @@ sys.path.append('.')
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.nsga2 import Individual, NSGA2
+from src.nsga2 import Individual, NSGA2, NSGA2Config
 from src.util.genetics import Genetics
 from src.util.plot import Plot
 from src.util.log import Log
@@ -52,6 +52,8 @@ class Circle(Individual):
             if (dist < self.r):
                 mass += p[2]
                 value += p[3]
+        if (mass == 0):
+            return (-float('inf'),-float('inf'))
         return (-mass, value)
 
     def plot(self, ax):
@@ -79,7 +81,7 @@ class Field:
         )
         cbar = fig.colorbar(scatter)
 
-        for circle in nsga2.population.values():
+        for circle in nsga2.generations[-1].population.values():
             circle.plot(ax)
 
         plt.show()
@@ -90,9 +92,10 @@ class Field:
 """
 def main():
     Log.setup('example/2d_cluster.log')
-    field = Field(500, (0, 100))
+    field = Field(100, (0, 100))
     
-    nsga2 = NSGA2(Circle, 100, field=field)
+    config = NSGA2Config(pop_size=100)
+    nsga2 = NSGA2(Circle, config, field=field)
     nsga2.train(epochs=100)
 
     field.plot(nsga2)

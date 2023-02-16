@@ -12,13 +12,27 @@ class Genetics:
         return np.random.randint(min, max)
 
     @staticmethod
+    def random_int_list(ranges: [(int,int)]):        
+        return [Genetics.random_int(min, max) for min, max in ranges]
+
+    @staticmethod
     def random_float(min: int, max: int):
         return np.random.rand() * (max-min) + min
+    
+    @staticmethod
+    def random_float_list(ranges: [(int,int)]):        
+        return [Genetics.random_float(min, max) for min, max in ranges]
 
     @staticmethod
     def random_select(param: str, a: Individual, b: Individual, prob_a=0.5):
-        param_a = getattr(a, param)
-        param_b = getattr(b, param)
+        if (isinstance(a, list)):
+            param_a = a[param]
+        else:
+            param_a = getattr(a, param)
+        if (isinstance(b, list)):
+            param_b = b[param]
+        else:
+            param_b = getattr(b, param)
         if (np.random.rand() < prob_a):
             return param_a
         return param_b

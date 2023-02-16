@@ -30,6 +30,8 @@ def non_dominated_sort(dict:{int|str:[float]}):
     fronts = [{}]
     for id_a, a in results.items():
         for id_b, b in results.items():
+            if (id_a == id_b):
+                continue
             if a > b:
                 a.inferiors.append(id_b)
             elif b > a:
