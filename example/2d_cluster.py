@@ -35,9 +35,9 @@ class Circle(Individual):
         self.r = Genetics.random_float(1, 20)
 
     def crossover(self, a, b):
-        self.x = Genetics.random_select('x', a, b)
-        self.y = Genetics.random_select('y', a, b)
-        self.r = Genetics.random_select('r', a, b)
+        self.x = Genetics.crossover('x', a, b)
+        self.y = Genetics.crossover('y', a, b)
+        self.r = Genetics.crossover('r', a, b)
 
     def mutate(self):
         self.x = Genetics.mutate_int(self.x, 0.1, 5, 0.01, (0,200))
@@ -94,7 +94,7 @@ def main():
     Log.setup('example/2d_cluster.log')
     field = Field(100, (0, 100))
     
-    config = NSGA2Config(pop_size=100)
+    config = NSGA2Config(pop_size=100, run_monitor_server=False)
     nsga2 = NSGA2(Circle, config, field=field)
     nsga2.train(epochs=100)
 

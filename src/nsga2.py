@@ -8,6 +8,9 @@ from typing import Type
 from src.select import select_n_best
 from src.sort import non_dominated_sort
 from src.util.log import Log
+from src.util.monitor.server import MonitorServer
+from multiprocessing import Process, Queue
+
 
 """
     An individual of the Genetic Algorithm.
@@ -94,11 +97,13 @@ class NSGA2Config:
     def __init__(self,
         pop_size: int = 100,
         crossover_ratio = 0.7,
-        gen_out_path: str = None
+        gen_out_path: str = None,
+        run_monitor_server = True
     ):
         self.pop_size = pop_size
         self.crossover_ratio = crossover_ratio
         self.gen_out_path = gen_out_path
+        self.run_monitor_server = run_monitor_server
 
 
 """
@@ -117,6 +122,18 @@ class NSGA2:
         self.individual_kwargs = kwargs
         self.population = {}
         self.generations = []
+        if (self.config.run_monitor_server):
+            self._run_monitor_server()
+
+    def load(self, path):
+        with open(path, 'rb') as file:
+            last_generation = pickle.load(file)
+        self.population = last_generation.population
+        self.generations = [last_generation]
+
+    def _run_monitor_server(self):
+        self.monitor_queue = Queue()
+        Process(target=MonitorServer.process, args=(self.monitor_queue,)).start()
 
     def _random_population(self, n: int):
         population = {}
@@ -138,13 +155,14 @@ class NSGA2:
         return sorted_ids
     
     def _binary_tournament(self, parents, sorted_ids):
-        parents_a = list(enumerate(sorted_ids))
-        parents_b = list(enumerate(sorted_ids))
-        np.random.shuffle(parents_a)
-        np.random.shuffle(parents_b)
+        sorted_ids = list(enumerate(sorted_ids))
+        np.random.shuffle(sorted_ids)
+        middle = len(sorted_ids)//2
+        parents_a = sorted_ids[:middle]
+        parents_b = sorted_ids[middle:2*middle]
         best_parents = []
         for a, b in zip(parents_a, parents_b):
-            if (a[0] > b[0]):
+            if (a[0] < b[0]):
                 best_parents.append(parents[a[1]])
             else:
                 best_parents.append(parents[b[1]])
@@ -183,26 +201,31 @@ class NSGA2:
             with open(path, 'wb') as file:
                 pickle.dump(generation, file)
 
-    def train(self, epochs: int): 
+        if (self.config.run_monitor_server):
+            dump = pickle.dumps(fitnesses)
+            self.monitor_queue.put(dump)
+
+    def train(self, epochs: int):
         # initial generation
-        Log.logger.info(f'Epoch 0/{epochs}')
+        if (len(self.population) == 0):
+            Log.logger.info(f'Epoch 0/{epochs}')
 
-        population = self._random_population(self.config.pop_size)
-        fitnesses = self._get_fitness(population)
+            population = self._random_population(self.config.pop_size)
+            fitnesses = self._get_fitness(population)
 
-        sorted_ids = self._select_best_ids(population, fitnesses)
-        self._save_gen(population, fitnesses, sorted_ids)
-        
-        self.population = self._evolve(population, sorted_ids)
+            sorted_ids = self._select_best_ids(population, fitnesses)
+            self._save_gen(population, fitnesses, sorted_ids)
+            
+            self.population = self._evolve(population, sorted_ids)
 
         # t-th generation
         for epoch in range(1,epochs+1):
             Log.logger.info(f'Epoch {epoch}/{epochs}')
-        
+
             fitnesses = self._get_fitness(self.population)
             fitnesses = { **fitnesses, **self.generations[-1].fitnesses }
             population = { **self.population, **self.generations[-1].population }
-        
+    
             sorted_ids = self._select_best_ids(population, fitnesses)
             population = { id: ind for id, ind in population.items() if id in sorted_ids }
             fitnesses = { id: ind for id, ind in fitnesses.items() if id in sorted_ids }
